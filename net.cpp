@@ -3,8 +3,8 @@
 #include <cstdlib>
 #include "Network.h"
 
-//#define ARMA_NO_DEBUG
-#define ARMA_USE_WRAPPER
+#define ARMA_NO_DEBUG
+//#define ARMA_USE_WRAPPER
 
 using namespace std;
 using namespace arma;

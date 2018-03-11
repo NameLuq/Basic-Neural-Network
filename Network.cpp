@@ -23,7 +23,6 @@ Network::Network(vector<int> neurons) {
 	for (auto& a : neuron_layers)
 		a(a.n_rows - 1) = 1;
 
-
 	for (auto& a : vec_weights)
 		a.for_each([](double & x) { x = -1 + rand() / ( RAND_MAX / 2.0 ); });
 
@@ -52,10 +51,13 @@ Col<double> Network::feedforward(Col<double> input) {
 	}
 
 	int n = vec_weights.size() + 1;
-	for (int i = 1; i < n; i++) {
+	for (int i = 1; i < n - 1; i++) {
 		neuron_layers[i] = vec_weights[i - 1].t() * neuron_layers[i - 1];
 		neuron_layers[i].for_each([](double & x) { x = sigmoid(x); });
+		neuron_layers[i](neuron_layers[i].n_rows - 1) = 1;
 	}
+	neuron_layers[n - 1] = vec_weights[n - 2].t() * neuron_layers[n - 2];
+	neuron_layers[n - 1].for_each([](double & x) { x = sigmoid(x); });
 
 	cout << "GUESS" << endl;
 
