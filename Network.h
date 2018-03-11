@@ -2,21 +2,22 @@
 #define NETWORK_H
 #include <armadillo>
 #include <vector>
+#include <cstdlib>
 
 class Network {
 public:
 
 	std::vector<arma::Col<double>> neuron_layers;
 	std::vector<arma::Mat<double>> vec_weights;
-	std::vector<arma::Col<double>> vec_bias_weights;
 
-	double lr = 3.0;
+	double lr = 0.5;
 
-	Network(int, std::vector<int>, int);
+	Network(std::vector<int>);
 	arma::Col<double> feedforward(arma::Col<double>);
-	void train();
-	void backpropagation();
-	double func(double);
+	void train(arma::Col<double>, arma::Col<double>);
+	//void backpropagation();
+	void testing();
+	static double sigmoid(double z) { return 1.0 / (1.0 + exp(-z)); }
 };
 
 #endif

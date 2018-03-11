@@ -4,56 +4,78 @@
 using namespace std;
 using namespace arma;
 
-double Network::func(double x) {
-	return 1.0 / (1.0 + exp(-x));
+Network::Network(vector<int> neurons) {
+	//arma_rng::set_seed_random();
+
+	int n = neurons.size();
+	cout << "constr" << endl;
+
+	for (int i = 0; i < n - 1; i++) {
+		neuron_layers.push_back(vec(neurons[i] + 1));
+	}
+	neuron_layers.push_back(vec(neurons[n - 1]));
+
+	for (int i = 0; i < n - 2; ++i) {
+		vec_weights.push_back(mat(neurons[i] + 1, neurons[i + 1] + 1));
+	}
+	vec_weights.push_back(mat(neurons[n - 2] + 1, neurons[n - 1]));
+
+	for (auto& a : neuron_layers)
+		a(a.n_rows - 1) = 1;
+
+
+	for (auto& a : vec_weights)
+		a.for_each([](double & x) { x = -1 + rand() / ( RAND_MAX / 2.0 ); });
+
+	//this->testing();
+
 }
 
-Network::Network(int input, vector<int> neurons, int output) {
-
-	for (int i = 0; i < neurons.size(); i++) {
-		neuron_layers.push_back(vec(neurons[i]));
-		vec_bias_weights.push_back(vec(neurons[i]));
-	}
-
-	vec_bias_weights.push_back(vec(output));
-
-	vec_weights.push_back(mat(neurons[0], input));
-	for (int i = 0; i < neurons.size() - 1; ++i) {
-		vec_weights.push_back(mat(neurons[i + 1], neurons[i]));
-	}
-	vec_weights.push_back(mat(output, neurons[neurons.size() - 1]));
-
-	//testing
-	for (auto& a : vec_bias_weights) {
-		a = a.randu();
-		a.print();
-		cout << "bias\n";
-	}
+void Network::testing() {
+	cout << "neurons: " << endl;
 	for (auto& a : neuron_layers) {
 		a.print();
-		cout << "vec\n";
-	}
-	cout << "fuck\n";
-	for (auto& a : vec_weights) {
-		a = a.randu() * 2 - 1.0;
-		a.print();
-		cout << "mat\n";
+		cout << endl;
 	}
 
+	cout << "matrices: " << endl;
+	for (auto& a : vec_weights) {
+		a.print();
+		cout << endl;
+	}
 }
 
 Col<double> Network::feedforward(Col<double> input) {
-	neuron_layers[0] = vec_bias_weights[0] + vec_weights[0] * input;
-	/*for (int i = 0; i < vec_weights.size(); i++)
-		;*/
+
+	for (int i = 0; i < input.size(); i++) {
+		neuron_layers[0](i) = input(i);
+	}
+
+	int n = vec_weights.size() + 1;
+	for (int i = 1; i < n; i++) {
+		neuron_layers[i] = vec_weights[i - 1].t() * neuron_layers[i - 1];
+		neuron_layers[i].for_each([](double & x) { x = sigmoid(x); });
+	}
+
 	cout << "GUESS" << endl;
-	neuron_layers[0].print();
+
+	neuron_layers[n - 1].print();
+	return neuron_layers[n - 1];
 }
 
-void Network::train() {
+void Network::train(Col<double> input, Col<double> answer) {
+	Col<double> output = this->feedforward(input);
+	Col<double> error = answer - output;
 
+	for (int i = vec_weights.size() - 1; i >= 0; i--) {
+		Mat<double> delta = lr * error % neuron_layers[i + 1] % (1 - neuron_layers[i + 1]) * neuron_layers[i].t();
+		error = vec_weights[i] * error;
+		vec_weights[i] += delta.t();
+		//cout << "layer " << i << endl;
+		//this->testing();
+	}
 }
 
-void Network::backpropagation() {
+/*void Network::backpropagation() {
 
-}
+}*/
