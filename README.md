@@ -1,2 +1,2 @@
-With this program you are able to create multilayer neural network.
-Also you can change activation function (sigmoid is default) and learning rate for different results
+Basic NN constructor which provides creation of neural network and training it along with making predictions.
+Can be extended with new layer types and different activation functions.
